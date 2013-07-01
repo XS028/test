@@ -119,12 +119,20 @@ public class test{
 			for(int i=1; i<=steps; i++){moneygr[i] = i*point;}//
 		}
 		
-		double range = (double)(max-min)/steps;
-		double rngrel = max;/// NOT! OPTIMISED FOR QUICK BUY // MUST BE SYNCED WITH minam CLASS!
+		double range = 0;
+		double rngrel = 0;
+		
+		if (steps>1){
+			range = (double)((max-min)/(steps-1));
+			rngrel = max;/// NOT! OPTIMISED FOR QUICK BUY // MUST BE SYNCED WITH minam CLASS!
+		}else{
+			range = (double)((max-min)/steps);
+			rngrel = max;/// NOT! OPTIMISED FOR QUICK BUY // MUST BE SYNCED WITH minam CLASS!
+		}
 
 		for (int i=1; i<=steps; i++){
-			rngrel = rngrel-range;
 			acttrig[i]=rngrel;
+			rngrel = rngrel-range;
 		}
 
 		for (int i=1; i<=steps; i++){
@@ -144,22 +152,7 @@ public class test{
 	public static void au(){
 
 		if (auen == 1){
-			
-			// escape mode check
-			if (escapemode==1){
-				int stop = 1;
-				for (int i=1; i<=steps; i++){
-					if (!(sellord[i]==0)){stop=0;}
-				}
-				if (stop==1){
-					writeall();
-					exw.text.setBackground(exw.green);
-					exw.sh("SELL ORDERS COMPLETED\nPROGRAMM STOPPED");
-					io.empty();
-				}
-			}
-			/////
-			
+
 			call.callapi(privateapiurl,"OrderList",0);
 
 			if (call.orderlist.containsKey("error")){
@@ -187,6 +180,21 @@ public class test{
 					call.callapi(privateapiurl,"Trade&pair="+mode+"&type=sell&rate="+system.rvdstr(acttrig[i]+acttrig[i]*mingain)+"&amount="+system.rvdstr(look_aside[i]),i);
 				}
 			}
+			
+			// escape mode check
+			if (escapemode==1){
+				int stop = 1;
+				for (int i=1; i<=steps; i++){
+					if (!(sellord[i]==0)){stop=0;}
+				}
+				if (stop==1){
+					writeall();
+					exw.text.setBackground(exw.green);
+					exw.sh("SELL ORDERS COMPLETED\nPROGRAMM STOPPED");
+					io.empty();
+				}
+			}
+			/////
 			
 			if (fifo==0){io.info(2);}
 			writeall();

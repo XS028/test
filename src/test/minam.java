@@ -4,6 +4,7 @@ import org.json.simple.JSONObject;
 
 public class minam{
 
+	@SuppressWarnings("unused")
 	public static int check(){
 
 		String mainm = test.mainm;
@@ -31,8 +32,8 @@ public class minam{
 			point = (double) tmp.get(mainm)/stp;//
 		}
 
-		double range = (double)(max-min)/steps;
-		double firstc = max-range;/// MUST BE SYNCED WITH test CLASS!
+		//double range = (double)((max-min)/(steps-1));
+		double firstc = max;/// MUST BE SYNCED WITH test CLASS!
 
 		tmp=(JSONObject) call.minamount.get(mode);// min amount check
 		double minam = Double.parseDouble(tmp.get("min_amount").toString());
