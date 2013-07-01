@@ -216,7 +216,7 @@ public class paint {
 		button2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (test.fifo==0&test.initializedonce==1){
-					if (test.auen==0&(!(text2.getText().equals(""))&(!(text5.getText().equals("")))&(!(text7.getText().equals(""))))){
+					if (test.auen==0&minam.check()==1&(!(text2.getText().equals(""))&(!(text5.getText().equals("")))&(!(text7.getText().equals(""))))){
 						int where = 1;
 						try {
 							test.min = Double.parseDouble(text2.getText());
@@ -225,6 +225,8 @@ public class paint {
 							where = 3;
 							test.max = Double.parseDouble(text7.getText());
 							text2.setBackground(gray);
+							text5.setBackground(gray);
+							text7.setBackground(gray);
 							button2.setBackground(green);
 							test.fifo=1;
 						}catch (Exception e2){
@@ -247,7 +249,11 @@ public class paint {
 			public void actionPerformed(ActionEvent e) {
 				if (test.fifo==0&test.initializedonce==1){
 					if (test.auen==0){
+						button2.setBackground(white);
 						button3.setBackground(green);
+						text2.setBackground(gray);
+						text5.setBackground(gray);
+						text7.setBackground(gray);
 						test.fifo=2;
 					}else{button3.setBackground(red);}
 				}

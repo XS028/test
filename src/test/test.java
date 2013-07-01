@@ -120,39 +120,46 @@ public class test{
 		}
 		
 		double range = (double)(max-min)/steps;
-		double rngrel = max+range;///OPTIMISED FOR QUICK BUY
+		double rngrel = max;/// NOT! OPTIMISED FOR QUICK BUY // MUST BE SYNCED WITH minam CLASS!
 
 		for (int i=1; i<=steps; i++){
 			rngrel = rngrel-range;
 			acttrig[i]=rngrel;
 		}
 
-		tmp=(JSONObject) call.minamount.get(mode);
-		double minam = Double.parseDouble(tmp.get("min_amount").toString());
-		int goodam = 1;
-		for (int i=1; i<=steps; i++){if (system.amb(minam,system.rvdd(moneygr[i]/acttrig[i]))){goodam=0;}}
+		for (int i=1; i<=steps; i++){
+			call.callapi(privateapiurl,"Trade&pair="+mode+"&type=buy&rate="+system.rvdstr(acttrig[i])+"&amount="+system.rvdstr(moneygr[i]/acttrig[i]),i);
+		}
 
-		if (goodam==1){
+		double fee = Double.parseDouble(call.fee.get(mode).toString());
+		for (int i=1; i<=steps; i++){
+			look_aside [i] = (system.rvdd(moneygr[i])/system.rvdd(acttrig[i]))-(system.rvdd(moneygr[i])/system.rvdd(acttrig[i]))*((fee/100)/20+fee/100);
+		}
 
-			for (int i=1; i<=steps; i++){
-				call.callapi(privateapiurl,"Trade&pair="+mode+"&type=buy&rate="+system.rvdstr(acttrig[i])+"&amount="+system.rvdstr(moneygr[i]/acttrig[i]),i);
-			}
-
-			double fee = Double.parseDouble(call.fee.get(mode).toString());
-			for (int i=1; i<=steps; i++){
-				look_aside [i] = (system.rvdd(moneygr[i])/system.rvdd(acttrig[i]))-(system.rvdd(moneygr[i])/system.rvdd(acttrig[i]))*((fee/100)/20+fee/100);
-			}
-
-			writeall();
-			auen = 1;
-			ggh.text5.setBackground(paint.gray);
-		}else{ggh.text5.setBackground(paint.red);}
+		writeall();
+		auen = 1;
+		ggh.text5.setBackground(paint.gray);
 	}
 
 	public static void au(){
 
 		if (auen == 1){
-	
+			
+			// escape mode check
+			if (escapemode==1){
+				int stop = 1;
+				for (int i=1; i<=steps; i++){
+					if (!(sellord[i]==0)){stop=0;}
+				}
+				if (stop==1){
+					writeall();
+					exw.text.setBackground(exw.green);
+					exw.sh("SELL ORDERS COMPLETED\nPROGRAMM STOPPED");
+					io.empty();
+				}
+			}
+			/////
+			
 			call.callapi(privateapiurl,"OrderList",0);
 
 			if (call.orderlist.containsKey("error")){
@@ -180,21 +187,7 @@ public class test{
 					call.callapi(privateapiurl,"Trade&pair="+mode+"&type=sell&rate="+system.rvdstr(acttrig[i]+acttrig[i]*mingain)+"&amount="+system.rvdstr(look_aside[i]),i);
 				}
 			}
-
-			// escape mode check
-			if (escapemode==1){
-				int stop = 1;
-				for (int i=1; i<=steps; i++){
-					if (!(sellord[i]==0)){stop=0;}
-				}
-				if (stop==1){
-					writeall();
-					exw.text.setBackground(exw.green);
-					exw.sh("SELL ORDERS COMPLETED\nPROGRAMM STOPPED");
-					io.empty();}
-			}
-			/////
-
+			
 			if (fifo==0){io.info(2);}
 			writeall();
 		}

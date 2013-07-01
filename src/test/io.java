@@ -42,10 +42,6 @@ public class io{
 			test.ggh.text4.append("Main dep.: "+test.mainm+"\n");
 			test.ggh.text4.append("Steps: "+test.steps+"\n");
 			test.ggh.text4.append("Gain: "+system.rv1dstr(test.mingain*100)+"%-"+system.rv1dstr((Double.parseDouble(call.fee.get(test.mode).toString())*2))+"%="+system.rv1dstr(test.mingain*100-(Double.parseDouble(call.fee.get(test.mode).toString())*2))+"%\n");
-			
-
-			
-				
 		} else {
 			int[] nextordbuy = new int[20];
 			int[] nextordsell = new int[20];
