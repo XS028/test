@@ -61,6 +61,10 @@ public class paint {
 	public JTextField text7 = new JTextField(){
 		private static final long serialVersionUID = 312465;
 	};
+	
+	public JButton text10 = new JButton(){
+		private static final long serialVersionUID = 456132;
+	};
 
 	public static JButton button1 = new JButton("Close"){
 		private static final long serialVersionUID = 356946;
@@ -93,6 +97,8 @@ public class paint {
 		viewForm.setResizable(false);
 		viewForm.getContentPane().setBackground(white);
 		viewForm.setIconImage(ind_ok);
+		
+		int dwn = 3;
 
 		////text1 pairs/prices
 		text1.setVisible(true);
@@ -105,7 +111,7 @@ public class paint {
 
 		//text2 - min price
 		text2.setVisible(true);
-		text2.setLocation(340,66);
+		text2.setLocation(340,46+dwn);
 		text2.setSize(70,22);
 		text2.setHorizontalAlignment(JTextField.CENTER);
 		text2.setFont(new Font("Arial", 14, 14));
@@ -114,7 +120,7 @@ public class paint {
 
 		JTextField text3 = new JTextField("min:");
 		text3.setVisible(true);
-		text3.setLocation(300,66);
+		text3.setLocation(300,46+dwn);
 		text3.setSize(39,22);
 		text3.setEditable(false);
 		text3.setBackground(white);
@@ -134,7 +140,7 @@ public class paint {
 
 		//text5 - steps
 		text5.setVisible(true);
-		text5.setLocation(340,98);
+		text5.setLocation(340,78+dwn);
 		text5.setSize(70,22);
 		text5.setHorizontalAlignment(JTextField.CENTER);
 		text5.setFont(new Font("Arial", 14, 14));
@@ -143,7 +149,7 @@ public class paint {
 		//text6 - steps note
 		JTextField text6 = new JTextField("steps:");
 		text6.setVisible(true);
-		text6.setLocation(300,98);
+		text6.setLocation(300,78+dwn);
 		text6.setSize(39,22);
 		text6.setEditable(false);
 		text6.setBackground(white);
@@ -154,7 +160,7 @@ public class paint {
 		
 		//text7 - max price
 		text7.setVisible(true);
-		text7.setLocation(340,34);
+		text7.setLocation(340,14+dwn);
 		text7.setSize(70,22);
 		text7.setHorizontalAlignment(JTextField.CENTER);
 		text7.setFont(new Font("Arial", 14, 14));
@@ -164,7 +170,7 @@ public class paint {
 		//text8 - max price note
 		JTextField text8 = new JTextField("max:");
 		text8.setVisible(true);
-		text8.setLocation(300,34);
+		text8.setLocation(300,14+dwn);
 		text8.setSize(39,22);
 		text8.setEditable(false);
 		text8.setBackground(white);
@@ -172,6 +178,27 @@ public class paint {
 		text8.setHorizontalAlignment(JTextField.CENTER);
 		text8.setFont(new Font("Arial", 12, 12));
 		//text8.setBackground(red);
+		
+		//text10 - success counter (Button)
+		text10.setVisible(true);
+		text10.setLocation(340,110+dwn);
+		text10.setSize(69,21);
+		text10.setFont(new Font("Arial", 14, 14));
+		text10.setBackground(gray);
+		text10.setFocusable(false);
+		//text10.setBackground(red);
+		
+		//text9 - success counter note
+		JTextField text9 = new JTextField("sold:");
+		text9.setVisible(true);
+		text9.setLocation(300,110+dwn);
+		text9.setSize(39,22);
+		text9.setEditable(false);
+		text9.setBackground(white);
+		text9.setBorder(null);
+		text9.setHorizontalAlignment(JTextField.CENTER);
+		text9.setFont(new Font("Arial", 12, 12));
+		//text9.setBackground(red);
 
 		//button2 - Set buy
 		button2.setVisible(true);
@@ -268,6 +295,13 @@ public class paint {
 				}
 			}
 		});
+		
+		text10.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				test.success = 0;
+				text10.setText("-");
+			}
+		});
 
 		viewForm.getContentPane().add(text1);
 		viewForm.getContentPane().add(text2);
@@ -277,6 +311,8 @@ public class paint {
 		viewForm.getContentPane().add(text6);
 		viewForm.getContentPane().add(text7);
 		viewForm.getContentPane().add(text8);
+		viewForm.getContentPane().add(text9);
+		viewForm.getContentPane().add(text10);
 		viewForm.getContentPane().add(button1);
 		viewForm.getContentPane().add(button2);
 		viewForm.getContentPane().add(button3);

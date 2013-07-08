@@ -7,24 +7,30 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Scanner;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import org.json.simple.JSONObject;
 
 public class test{
-
+	// GUI
 	public static Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize();
 	public static int ww = sSize.width;;
 	public static int wh = sSize.height;;
 	public static paint ggh = new paint();	//draw GUI
 	public static exw ex_w = new exw();		//exception window
-
+	// Var. init
 	public static int fifo = 0;
 	public static int initializedonce = 0;
 	public static int canclosenow = 0;
 	public static int sleeptime = 30;
+	public static int docall = 1;
 	public static String publicapiurl = "https://btc-e.com/api/2/";
 	public static String publicapiv3url = "https://btc-e.com/api/3/";
 	public static String privateapiurl = "https://btc-e.com/tapi";
-
 	/////////// AU
 	public static String mode = "ltc_rur";
 	public static String mainm = "rur";
@@ -43,13 +49,16 @@ public class test{
 	public static int auen = 0;
 	public static int escapemode = 0;
 	public static int linx = 1; // 1-linear, 2-multiplier
+	public static int success = 0;
+	public static int startlater[] = new int[20];
 	////////////
 
 	public static void main(String[] args){
 		while (true){
+			io.p("--------");
 			if (ggh.viewForm.isVisible()==false){io.t();}
 			canclosenow = 0;
-			if (initializedonce == 0){call.getnonce(); call.getkeys(); cfg.readcfg();};
+			if (initializedonce == 0){call.getnonce(); call.getkeys(); cfg.readcfg();arrinit();};
 			ggh.viewForm.setIconImage(paint.ind_wait);
 			getall();
 			au();
@@ -60,6 +69,10 @@ public class test{
 			system.sleep(sleeptime);
 		}
 	}//
+	
+	public static void arrinit(){
+		for(int i=1; i<=steps; i++){buyord[i]=0;sellord[i]=0;needtobuy[i]=0;needtosell[i]=0;startlater[i]=0;}
+	}
 
 	public static void fifoexecute(){
 		switch(fifo){
@@ -79,22 +92,24 @@ public class test{
 
 	// get all
 	public static void getall(){
-		call.callapi(publicapiurl+mode+"/ticker","",0);
-		if(initializedonce==0){
-			call.callapi(publicapiurl+mode+"/fee","",0);
-			call.callapi(publicapiv3url+"info","",0);
-	}
+		if (docall==1){call.callapi(publicapiurl+mode+"/ticker","",0);}
+
+		if(initializedonce==0){								//Только 1 раз (при старте)
+			call.callapi(publicapiurl+mode+"/fee","",0);	//Получить процент комиссии
+			call.callapi(publicapiv3url+"info","",0);		//Получить минимальный объем покупки
+		}
 
 		if(fifo==0&auen==0){io.info(1);}// if auto mode is off, show short info
 
 		io.pgclr();
-		JSONObject js = (JSONObject) call.ticker.get(mode);
-		io.pg(mode.toUpperCase().replace("_", "/")+"     "+system.rvavgdstr(Double.parseDouble(js.get("last").toString()))+"\n");
+		JSONObject tmp = (JSONObject) call.ticker.get(mode);
+		io.pg(mode.toUpperCase().replace("_", "/")+"     "+system.rvavgdstr(Double.parseDouble(tmp.get("buy").toString()))+"\n");
 		if(linx==1){io.pg("\nlinear\n");}else{io.pg("\nmultiplier\n");}
 		if(escapemode==1){io.pg("escape\n");}
+		if (io.sendc==1){io.pg("\n"+test.mode+"/"+test.mainm+"/"+test.steps+"/"+system.rv1dstr(test.mingain*100-(Double.parseDouble(call.fee.get(test.mode).toString())*2))+"%");}
+		if (success==0){ggh.text10.setText("-");}else{ggh.text10.setText(new Integer(success).toString());}
 		
-		if (initializedonce == 0){ // min filed autofill
-			JSONObject tmp = (JSONObject) call.ticker.get(mode);
+		if (initializedonce == 0){ // min field autofill
 			double temp = Double.parseDouble(tmp.get("sell").toString());
 			temp = temp - temp*autofill;
 			ggh.text2.setText(system.rvavgdstr(temp));
@@ -106,6 +121,7 @@ public class test{
 	}
 
 	public static void auinit(){
+
 		JSONObject tmp = new JSONObject();
 		tmp = (JSONObject) call.account.get("funds");//
 
@@ -121,6 +137,7 @@ public class test{
 		
 		double range = 0;
 		double rngrel = 0;
+		double fee = Double.parseDouble(call.fee.get(mode).toString());
 		
 		if (steps>1){
 			range = (double)((max-min)/(steps-1));
@@ -129,19 +146,16 @@ public class test{
 			range = (double)((max-min)/steps);
 			rngrel = max;/// NOT! OPTIMISED FOR QUICK BUY // MUST BE SYNCED WITH minam CLASS!
 		}
+		
+		tmp = (JSONObject) call.ticker.get(mode);
+		double buycost = Double.parseDouble(tmp.get("buy").toString());
 
 		for (int i=1; i<=steps; i++){
 			acttrig[i]=rngrel;
 			rngrel = rngrel-range;
-		}
-
-		for (int i=1; i<=steps; i++){
-			call.callapi(privateapiurl,"Trade&pair="+mode+"&type=buy&rate="+system.rvdstr(acttrig[i])+"&amount="+system.rvdstr(moneygr[i]/acttrig[i]),i);
-		}
-
-		double fee = Double.parseDouble(call.fee.get(mode).toString());
-		for (int i=1; i<=steps; i++){
 			look_aside [i] = (system.rvdd(moneygr[i])/system.rvdd(acttrig[i]))-(system.rvdd(moneygr[i])/system.rvdd(acttrig[i]))*((fee/100)/20+fee/100);
+			if (system.amb(acttrig[i], buycost)){startlater[i]=1;}
+			else {call.callapi(privateapiurl,"Trade&pair="+mode+"&type=buy&rate="+system.rvdstr(acttrig[i])+"&amount="+system.rvdstr(moneygr[i]/acttrig[i]),i);}
 		}
 
 		writeall();
@@ -152,61 +166,74 @@ public class test{
 	public static void au(){
 
 		if (auen == 1){
+			checkescape();
 
+			JSONObject tmp = (JSONObject) call.ticker.get(mode);
+			double buycost = Double.parseDouble(tmp.get("buy").toString());
+			
+			for (int i=1; i<=steps; i++){//докупить, если нужно
+				if((system.amb(buycost,acttrig[i]))&(startlater[i]==1)){
+					startlater[i]=0;
+					call.callapi(privateapiurl,"Trade&pair="+mode+"&type=buy&rate="+system.rvdstr(acttrig[i])+"&amount="+system.rvdstr(moneygr[i]/acttrig[i]),i);
+				}
+			}
+			
 			call.callapi(privateapiurl,"OrderList",0);
 
 			if (call.orderlist.containsKey("error")){
-				for (int i=1; i<=steps; i++){
-					if (!(sellord[i]==0)){needtobuy[i] = 1;}
-					if (!(buyord[i]==0)){needtosell[i] = 1;}
+				if (call.orderlist.get("error").toString().contains("no orders")){
+					for (int i=1; i<=steps; i++){
+						if (!(sellord[i]==0)){needtobuy[i] = 1;}else{if (!(buyord[i]==0)){needtosell[i] = 1;}}
+					}
 				}
 			}else{
-				JSONObject tmp = (JSONObject) call.orderlist.get("return");
+				tmp = (JSONObject) call.orderlist.get("return");
 				for (int i=1; i<=steps; i++){
-					if (tmp.containsKey(new Integer(sellord[i]).toString())){needtobuy[i] = 0;}else if (!(sellord[i]==0)){needtobuy[i] = 1;}
-					if (tmp.containsKey(new Integer(buyord[i]).toString())){needtosell[i] = 0;}else if (!(buyord[i]==0)){needtosell[i] = 1;}
+					if ((!(tmp.containsKey(new Integer(sellord[i]).toString())))&(!(sellord[i]==0))){needtobuy[i] = 1;
+					}else{
+					if ((!(tmp.containsKey(new Integer(buyord[i]).toString())))&(!(buyord[i]==0))){needtosell[i] = 1;}}
 				}
 			} 
+			
+			int pl = 0;
 
 			for (int i=1; i<=steps; i++){
 				if(needtobuy[i] == 1){
 					needtobuy[i] = 0;
 					sellord[i] = 0;
+					success ++;
+					pl = 1;
 					call.callapi(privateapiurl,"Trade&pair="+mode+"&type=buy&rate="+system.rvdstr(acttrig[i])+"&amount="+system.rvdstr(moneygr[i]/acttrig[i]),i);
-				}
-				if (needtosell[i] == 1){
-					needtosell[i] = 0;
-					buyord[i] = 0;
-					call.callapi(privateapiurl,"Trade&pair="+mode+"&type=sell&rate="+system.rvdstr(acttrig[i]+acttrig[i]*mingain)+"&amount="+system.rvdstr(look_aside[i]),i);
+				} else {
+					if (needtosell[i] == 1){
+						buyord[i] = 0;
+						needtosell[i] = 0;
+						call.callapi(privateapiurl,"Trade&pair="+mode+"&type=sell&rate="+system.rvdstr(acttrig[i]+acttrig[i]*mingain)+"&amount="+system.rvdstr(look_aside[i]),i);
+					}
 				}
 			}
 			
-			// escape mode check
-			if (escapemode==1){
-				int stop = 1;
-				for (int i=1; i<=steps; i++){
-					if (!(sellord[i]==0)){stop=0;}
-				}
-				if (stop==1){
-					writeall();
-					exw.text.setBackground(exw.green);
-					exw.sh("SELL ORDERS COMPLETED\nPROGRAMM STOPPED");
-					io.empty();
-				}
-			}
-			/////
+			if(pl==1){test.PlaySound("C:/test/notify.wav");}
 			
+			checkescape();
 			if (fifo==0){io.info(2);}
-			writeall();
+			if (docall==5){writeall();} //запись в файл каждые 10 сек.
 		}
 	}
-
-	public static void sellnow(int pos){
-		call.callapi(privateapiurl,"Trade&pair="+mode+"&type=sell&rate="+system.rvdstr(acttrig[pos]+acttrig[pos]*mingain)+"&amount="+system.rvdstr(look_aside[pos]),pos);
-	}
-
-	public static void buynow(int pos){
-		call.callapi(privateapiurl,"Trade&pair="+mode+"&type=buy&rate="+system.rvdstr(acttrig[pos])+"&amount="+system.rvdstr(moneygr[pos]/acttrig[pos]),pos);
+	
+	public static void checkescape(){
+		if (escapemode==1){
+			int stop = 1;
+			for (int i=1; i<=steps; i++){
+				if (!(sellord[i]==0)){stop=0;}
+			}
+			if (stop==1){
+				writeall();
+				exw.text.setBackground(exw.green);
+				exw.sh("SELL ORDERS COMPLETED\nPROGRAMM STOPPED");
+				io.empty();
+			}
+		}
 	}
 
 	public static void readall(){
@@ -226,6 +253,8 @@ public class test{
 			for (int i=1; i<needtosell.length; i++){needtosell[i] = Integer.parseInt(sc.next());}
 			sc.nextLine();
 			for (int i=1; i<needtobuy.length; i++){needtobuy[i] = Integer.parseInt(sc.next());}
+			sc.nextLine();
+			for (int i=1; i<startlater.length; i++){startlater[i] = Integer.parseInt(sc.next());}
 			sc.nextLine();
 			steps = Integer.parseInt(sc.next());
 			sc.close();
@@ -266,6 +295,8 @@ public class test{
 			for (int i=1; i<needtosell.length; i++){out.print(needtosell[i]);if (!(i==needtosell.length-1)){out.print(" ");}}
 			out.println();
 			for (int i=1; i<needtobuy.length; i++){out.print(needtobuy[i]);if (!(i==needtobuy.length-1)){out.print(" ");}}
+			out.println();
+			for (int i=1; i<startlater.length; i++){out.print(startlater[i]);if (!(i==startlater.length-1)){out.print(" ");}}
 			out.println();/////
 			out.print(steps);/////
 			out.close();
@@ -284,8 +315,22 @@ public class test{
 		for (int i=1; i<=steps; i++){
 			needtosell[i] = 0;
 			needtobuy[i] = 0;
+			startlater[i] = 0;
 			writeall();
 		}
+		io.sendc = 0;
 	}
+	
+	static void PlaySound(String f){
+		try{
+			AudioInputStream stream = AudioSystem.getAudioInputStream(new File(f));
+			DataLine.Info info = new DataLine.Info(Clip.class, stream.getFormat());
+			Clip clip = (Clip) AudioSystem.getLine(info);
+			clip.open(stream);
+			clip.start();
+		} catch (UnsupportedAudioFileException e){} 
+		catch (IOException e){} 
+		catch (LineUnavailableException e){}
+		}
  
 }//

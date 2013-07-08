@@ -21,40 +21,13 @@ public class system{
 		return ax>ay;
 	}
 
-	public static double r5avgstrd(String in){
-		BigDecimal bigDecimal = new BigDecimal(Double.parseDouble(in));
-		bigDecimal = bigDecimal.setScale(5, BigDecimal.ROUND_UP);
-		return bigDecimal.doubleValue();	
-	}
-
-	public static String r5avgdstr(double in){
-		BigDecimal bigDecimal = new BigDecimal(in);
-		bigDecimal = bigDecimal.setScale(5, BigDecimal.ROUND_UP);
-		if(bigDecimal.toPlainString().length()>7){
-			return bigDecimal.toPlainString().substring(0,7);
-		}else return bigDecimal.toPlainString();
-	}
-
-	public static String r3avgdstr(double in){// test
-		BigDecimal bigDecimal = new BigDecimal(in);
-		bigDecimal = bigDecimal.setScale(3, BigDecimal.ROUND_HALF_UP);
-		return bigDecimal.toPlainString();
-	}   
-
-	public static String r3avgstrstr(String ins){// io
-		double in = Double.parseDouble(ins);
-		BigDecimal bigDecimal = new BigDecimal(in);
-		bigDecimal = bigDecimal.setScale(3, BigDecimal.ROUND_HALF_UP);
-		return bigDecimal.toPlainString();
-	}
-
-	public static String rvdstr(double in){
+	public static String rvdstr(double in){// call.callapi
 		BigDecimal bigDecimal = new BigDecimal(in);
 		String ins = bigDecimal.toPlainString();
 		if (ins.length()>=7) {return ins.substring(0,7);}else{return ins;}
 	}
 
-	public static double rvdd(double in){
+	public static double rvdd(double in){// lookaside, minam
 		BigDecimal bigDecimal = new BigDecimal(in);
 		String ins = bigDecimal.toPlainString();
 		String tmp = "";
@@ -62,13 +35,14 @@ public class system{
 		return Double.parseDouble(tmp);
 	}
 
-	public static String rv1dstr(double in){
+	public static String rv1dstr(double in){ // io, проценты
 		BigDecimal bigDecimal = new BigDecimal(in);
 		bigDecimal = bigDecimal.setScale(1, BigDecimal.ROUND_DOWN);
 		return bigDecimal.toPlainString();
 	}
 
-	public static String rvavgdstr(double in){// test
+	public static String rvavgdstr(double in){// UI only
+		in = in+0.00000000001;//исправление ошибки округления (системной) за пределами точности вывода
 		BigDecimal bigDecimal = new BigDecimal(in);
 		if (amb(in, 100000)){bigDecimal = bigDecimal.setScale(0, BigDecimal.ROUND_DOWN);}
 		else if (amb(in, 10000)&amb(100000, in)){bigDecimal = bigDecimal.setScale(0, BigDecimal.ROUND_DOWN);}

@@ -86,7 +86,7 @@ public class call {
 					system.sleep(errcount);
 					if(errcount<=10){callapi(urladdr,method,pos);errcount = 0;}else{exw.sh("Connection send to server error!");io.empty();}
 				}
-				io.p(urlParameters);
+				io.p(method);
 			}
 	        
 			if (cangonext == 2){
@@ -151,21 +151,39 @@ public class call {
 			} else {	/// PRIVATE / TRADE API
 				if (method.contains("getInfo")){account = (JSONObject) info.get("return");} // w/o success
 				if (method.contains("OrderList")){orderlist = info;}
-				if (method.contains("TradeHistory")){tradehistory = info;}
+				//if (method.contains("TradeHistory")){tradehistory = info;}
 
 				if (method.contains("Trade")&method.contains("buy")){
-					if (info.containsKey("error")){test.buyord[pos] = 0;} else {
+					if (!(info.containsKey("error"))){
 						JSONObject tmp = (JSONObject) info.get("return");
-						test.buyord[pos] = Integer.parseInt(tmp.get("order_id").toString());
-						if (test.buyord[pos] == 0){test.sellnow(pos);}// sell right now by id
+						
+						io.p("Контроль при покупке/возврат значения: "+tmp.get("order_id").toString());
+						
+						if (tmp.get("order_id").toString().equals("0")){
+							test.needtosell[pos] = 1;
+							test.buyord[pos] = 0;
+							io.p("Покупка совершилась мгновенно");
+						}else{
+							test.buyord[pos] = Integer.parseInt(tmp.get("order_id").toString());
+							io.p("Долгая покупка");
+						}
 					}
 				}
 			
 				if (method.contains("Trade")&method.contains("sell")){
-					if (info.containsKey("error")){test.sellord[pos] = 0;} else {
+					if (!(info.containsKey("error"))){
 						JSONObject tmp = (JSONObject) info.get("return");
-						test.sellord[pos] = Integer.parseInt(tmp.get("order_id").toString());
-						if (test.sellord[pos] == 0){test.buynow(pos);}// buy right now by id
+						
+						io.p("Контроль при продаже/возврат значения: "+tmp.get("order_id").toString());
+						
+						if (tmp.get("order_id").toString().equals("0")){
+							test.needtobuy[pos] = 1;
+							test.sellord[pos] = 0;
+							io.p("Продажа совершилась мгновенно");
+						}else{
+							test.sellord[pos] = Integer.parseInt(tmp.get("order_id").toString());
+							io.p("Долгая продажа");
+						}
 					}
 				}
 			}
